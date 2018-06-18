@@ -1,8 +1,8 @@
 #! /bin/bash
-
-puppetDebURL="https://apt.puppetlabs.com/puppet5-release-stretch.deb"
+_root="/atlas"
 
 function _puppet() {
+	puppetDebURL="https://apt.puppetlabs.com/puppet5-release-stretch.deb"
 	wget -O /tmp/puppet.deb ${puppetDebURL} || exit 20
 	dpkg -i /tmp/puppet.deb || exit 21
 	rm -f /tmp/puppet.deb || exit 22
@@ -10,18 +10,26 @@ function _puppet() {
 	apt-get install -y puppet || exit 24
 }
 
-#if _puppet ; then
-#fi
+if [[ "$1" == "first-boot" ]] ; then
 
-curl -sSL https://install.pi-hole.net > /atlas/pihole.sh
-curl -L https://install.pivpn.io > /atlas/pivpn.sh
+	#if _puppet ; then
+	#fi
 
-## Pi boot settings
-piConfig="/boot/config.txt"
+	curl -sSL https://install.pi-hole.net > ${_root}/pihole.sh
+	curl -L https://install.pivpn.io > ${_root}/pivpn.sh
 
-echo "hdmi_force_hotplug=1" > ${piConfig}
-echo "hdmi_edid_file=1" > ${piConfig}
+	## Pi boot settings
+	piConfig="/boot/config.txt"
 
-cp -a /atlas/edid.dat /boot/
+	echo "hdmi_force_hotplug=1" > ${piConfig}
+	echo "hdmi_edid_file=1" > ${piConfig}
 
-shutdown -r now
+	cp -a ${_root}/edid.dat /boot/
+
+	shutdown -r now
+
+elif [[ "$1" == "manual" ]] ; then
+	bash ${_root}/pihole.sh && bash ${_root}/pivpn.sh && sudo shutdown -r now
+else
+	echo "Use argument 'first-boot' or 'manual' with this script."
+fi
