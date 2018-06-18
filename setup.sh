@@ -15,3 +15,13 @@ function _puppet() {
 
 curl -sSL https://install.pi-hole.net > /atlas/pihole.sh
 curl -L https://install.pivpn.io > /atlas/pivpn.sh
+
+## Pi boot settings
+piConfig="/boot/config.txt"
+
+echo "hdmi_force_hotplug=1" > ${piConfig}
+echo "hdmi_edid_file=1" > ${piConfig}
+
+cp -a /atlas/edid.dat /boot/
+
+shutdown -r now
