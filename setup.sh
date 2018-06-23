@@ -1,5 +1,10 @@
 #! /bin/bash
-_root="/atlas"
+_root="/srv/atlas"
+_common="/srv/common"
+
+if [ -e ${_common}/scripts/init ] ; then
+	source ${_common}/scripts/init
+fi
 
 function _puppet() {
 	puppetDebURL="https://apt.puppetlabs.com/puppet5-release-stretch.deb"
@@ -10,26 +15,20 @@ function _puppet() {
 	apt-get install -y puppet || exit 24
 }
 
-if [[ "$1" == "first-boot" ]] ; then
+if [[ "$1" == "first-run" ]] ; then
 
-	#if _puppet ; then
-	#fi
+	git clone https://github.com/Jekotia/srv-common.git ${_common}
+	chown -R pi:pi ${_common}
 
+	_puppet
+
+	source ${_root}/pi-boot/setup.sh
+
+elif [[ "$1" == "manual" ]] ; then
 	curl -sSL https://install.pi-hole.net > ${_root}/pihole.sh
 	curl -L https://install.pivpn.io > ${_root}/pivpn.sh
 
-	## Pi boot settings
-	piConfig="/boot/config.txt"
-
-	echo "hdmi_force_hotplug=1" > ${piConfig}
-	echo "hdmi_edid_file=1" > ${piConfig}
-
-	cp -a ${_root}/edid.dat /boot/
-
-	shutdown -r now
-
-elif [[ "$1" == "manual" ]] ; then
-	bash ${_root}/pihole.sh && bash ${_root}/pivpn.sh && sudo shutdown -r now
+	bash ${_root}/pihole.sh && bash ${_root}/pivpn.sh
 else
 	echo "Use argument 'first-boot' or 'manual' with this script."
 fi
